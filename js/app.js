@@ -122,7 +122,7 @@ Map = {
 }
 Pub = {
     getById: function (id) {
-        Pub.details(id);
+        // Pub.details(id);
         console.log("Get by ID");
         var request = {
             placeId: id
@@ -136,86 +136,38 @@ Pub = {
             }
         });
     },
-    nextPubDetails: function () {
-        matrixService.getDistanceMatrix({
-            origins: [myLocation],
-            destinations: [pubs[Pub.count.next()].geometry.location],
+    addDetails: function (pub_no) {
+        var request = {
+            origin: myLocation,
+            destination: pubs[pub_no].geometry.location,
             travelMode: google.maps.TravelMode.WALKING
-        }, function (response, status) {
-            if (status == google.maps.DistanceMatrixStatus.OK) {
-                var origins = response.originAddresses;
-                var destinations = response.destinationAddresses;
-                for (var i = 0; i < origins.length; i++) {
-                    var results = response.rows[i].elements;
-                    for (var j = 0; j < results.length; j++) {
-                        var element = results[j];
-                        var distance = element.distance.text;
-                        var duration = element.duration.text;
-                    }
-                }
+        };
+        directionsService.route(request, function (response, status) {
+            if (status == google.maps.DirectionsStatus.OK) {
+                var distance = response.routes[0].legs[0].distance.text;
+                var duration = response.routes[0].legs[0].duration.text;
+                pubs[pub_no].distance = distance;
+                pubs[pub_no].duration = duration;
+
             }
         });
-    },
-    details: function (placeId) {
-        var request = {
-            placeId: placeId
-        }
-        var latLng;
-        /* service.getDetails(request, function (place, status) {
-            if (status == google.maps.places.PlacesServiceStatus.OK) {
-                geocoder.geocode({
-                    "latLng": place.geometry.location
-                }, function (results, status) {
-                    var path;
-                    if (status == google.maps.GeocoderStatus.OK) {
-                        console.log(results.formatted_address);
-                        var city, country;
-                        $.each(results, function (i, val) {
-                            $.each(val['address_components'], function (i, val) {
-                                if (val['types'] == "locality,political") {
-                                    if (val['long_name'] != "") {
-                                        city = val["long_name"];
-                                    }
-                                }
-                                if (val["types"] == "country,political") {
-                                    if (val["long_name"] != "") {
-                                        country = val["long_name"];
-                                    }
-                                }
-                            });
-                        });
-                        path = encodeURI("/" + country + "/" + city + "/");
-                    } else {
-                        alert('Geocoder failed due to: ' + status);
-                        path = "/";
-                    }
-                    var id = "@" + placeId;
-                    var next_id;
-                    currentPub + 1 >= pubs.length ? next_id = pubs[0].place_id : next_id = pubs[currentPub + 1].place_id;
-                    console.log(next_id);
-                    $("#nextPub").attr("href", path + "@" + next_id);
-                    URL.set(path + id);
-                });
-            }
-        }); */
-    },
-    count: {
-        next: function () {
-            return currentPub + 1 > pubs.length ? 0 : currentPub + 1;
-        },
-        prev: function () {
-            return currentPub - 1 < 0 ? pubs.length : currentPub - 1;
-        }
-    },
-    next: function () {
-        currentPub++;
-        currentPub >= pubs.length ? currentPub = 0 : null;
-        Map.directions(myLocation, pubs[currentPub].geometry.location);
-        // UI.navigation.nextPubDetails();
     }
 }
 UI = {
-    navigation: {}
+    navigation: {
+        next: function () {
+            currentPub++;
+            currentPub >= pubs.length ? currentPub = 0 : null;
+            Pub.addDetails(currentPub + 1);
+            Map.directions(myLocation, pubs[currentPub].geometry.location);
+            UI.navigation.nextPubDetails();
+        },
+        nextPubDetails: function () {
+            $("nav.pagination .pag-pub-name").text(pubs[currentPub + 1].name);
+            $("nav.pagination .pag-pub-distance").text(pubs[currentPub + 1].distance);
+            console.log(pubs[currentPub + 1].duration);
+        }
+    }
     /* function () {
             var id = pubs[currentPub].place_id;
             var name = pubs[currentPub].name;
@@ -237,11 +189,13 @@ URL = {
         return array[1];
     },
     set: function (url) {
-        var obj = {
-            LatLng: pubs[currentPub].geometry.location
-        };
-        history.pushState(obj, null, url);
-    }
+            var obj = {
+                LatLng: pubs[currentPub].geometry.location
+            };
+            history.pushState(obj, null, url);
+        }
+        /*,
+            link: "http://maps.google.com/maps?saddr=" + encodeURI(myLocation + "&daddr=" + pubs[0].name + ", " + pubs[0].vicinity), */
 }
 switch (URL.check()) {
 case "search":
@@ -254,9 +208,8 @@ default:
     Map.init();
 }
 $("nav.pagination .next").click(function (e) {
-    console.log(e);
     e.preventDefault;
-    Pub.next();
+    UI.navigation.next();
     return false;
 });
 window.onpopstate = function (event) {
