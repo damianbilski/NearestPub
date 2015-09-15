@@ -13,8 +13,8 @@ var map,
     directionsDisplay,
     directionsService,
     stepsArray = [],
-    currentPub = 0,
-    pubs = {};
+    pubs = {},
+    currentPub = 0;
 var Map, Pub, Contact, URL, UI = new Object();
 
 function history_api() {
@@ -61,7 +61,7 @@ Map = {
             location: myLocation,
             rankBy: google.maps.places.RankBy.DISTANCE,
             types: ['bar', 'cafe', 'food', 'liquor_store', 'lodging', 'meal_delivery', 'meal_takeaway', 'night_club', 'restaurant'],
-            keyword: ['bar, pub, restaurant']
+            keyword: ['irish pub', 'irish', 'pub']
         };
         searchService.nearbySearch(request, Map.callback);
     },
@@ -72,6 +72,7 @@ Map = {
             for (var i = 0; i < pubs.length; i++) {
                 destinations.push(pubs[i].geometry.location);
             }
+            console.log(pubs[currentPub]);
             var request = {
                 origins: [myLocation],
                 destinations: destinations,
@@ -112,15 +113,14 @@ Map = {
                     suppressMarkers: true
                 });
                 var myRoute = response.routes[0].legs[0];
-                console.log(myRoute.distance);
                 for (var i = 0; i < myRoute.steps.length; i++) {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
                 }
                 Map.marker(pubs[currentPub].geometry.location, "<b>" + pubs[currentPub].name + "</b>", true);
-                $("nav.pagination .pag-pub-name").text(pubs[currentPub + 1].name);
-                $("nav.pagination .pag-pub-distance").text(pubs[currentPub + 1].distance + " (" + pubs[currentPub + 1].duration + " walking)");
+                $("nav.pagination .pag-pub-name").text(pubs[Pub.count.next()].name);
+                $("nav.pagination .pag-pub-distance").text(pubs[Pub.count.next()].distance + " (" + pubs[Pub.count.next()].duration + " walking)");
             } else {
-                Map.message(response);
+                Map.message("directionsService : " + status);
             }
         });
     },
@@ -160,13 +160,26 @@ Pub = {
                 Map.search();
             }
         });
+    },
+    count: {
+        next: function () {
+            return currentPub + 1 > pubs.length - 1 ? 0 : currentPub + 1;
+        },
+        prev: function () {
+            return currentPub - 1 < 0 ? pubs.length - 1 : currentPub - 1;
+        }
     }
 }
 UI = {
     buttons: {
         next: function () {
             currentPub++;
-            currentPub >= pubs.length ? currentPub = 0 : null;
+            currentPub >= pubs.length ? currentPub = 0 : currentPub;
+            Map.directions(myLocation, pubs[currentPub].geometry.location);
+        },
+        prev: function () {
+            currentPub--;
+            currentPub < 0 ? currentPub = pubs.length - 1 : currentPub;
             Map.directions(myLocation, pubs[currentPub].geometry.location);
         }
     }
@@ -212,6 +225,11 @@ default:
 $("nav.pagination .next").click(function (e) {
     e.preventDefault;
     UI.buttons.next();
+    return false;
+});
+$("nav.pagination .prev").click(function (e) {
+    e.preventDefault;
+    UI.buttons.prev();
     return false;
 });
 window.onpopstate = function (event) {
