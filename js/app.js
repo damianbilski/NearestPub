@@ -5,13 +5,13 @@
 
 
 var map,
-    service,
     geocoder,
     infowindow,
     myLocation,
+    searchService,
+    matrixService,
     directionsDisplay,
     directionsService,
-    matrixService,
     stepsArray = [],
     currentPub = 0,
     pubs = {};
@@ -43,7 +43,7 @@ Map = {
             disableDefaultUI: true
         };
         map = new google.maps.Map(document.getElementById('map'), options);
-        service = new google.maps.places.PlacesService(map);
+        searchService = new google.maps.places.PlacesService(map);
         directionsDisplay.setMap(map);
         if (window.location.href.indexOf("@") > -1) {
             var url = window.location.href;
@@ -61,14 +61,36 @@ Map = {
             location: myLocation,
             rankBy: google.maps.places.RankBy.DISTANCE,
             types: ['bar', 'cafe', 'food', 'liquor_store', 'lodging', 'meal_delivery', 'meal_takeaway', 'night_club', 'restaurant'],
-            keyword: ['irish pub', 'irish', 'pub']
+            keyword: ['bar, pub, restaurant']
         };
-        service.nearbySearch(request, Map.callback);
+        searchService.nearbySearch(request, Map.callback);
     },
     callback: function (results, status) {
         if (status == google.maps.places.PlacesServiceStatus.OK) {
             pubs = results;
-            Map.directions(myLocation, pubs[currentPub].geometry.location);
+            var destinations = [];
+            for (var i = 0; i < pubs.length; i++) {
+                destinations.push(pubs[i].geometry.location);
+            }
+            var request = {
+                origins: [myLocation],
+                destinations: destinations,
+                travelMode: google.maps.TravelMode.WALKING
+            }
+            matrixService.getDistanceMatrix(request, function (response, status) {
+                if (status == google.maps.DistanceMatrixStatus.OK) {
+                    for (var i = 0; i < response.originAddresses.length; i++) {
+                        var results = response.rows[i].elements;
+                        for (var j = 0; j < results.length; j++) {
+                            pubs[j].distance = results[j].distance.text;
+                            pubs[j].duration = results[j].duration.text;
+                        }
+                    }
+                    Map.directions(myLocation, pubs[currentPub].geometry.location);
+                } else {
+                    Map.message(status);
+                }
+            });
         } else {
             Map.message(status);
         }
@@ -90,10 +112,13 @@ Map = {
                     suppressMarkers: true
                 });
                 var myRoute = response.routes[0].legs[0];
+                console.log(myRoute.distance);
                 for (var i = 0; i < myRoute.steps.length; i++) {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
                 }
                 Map.marker(pubs[currentPub].geometry.location, "<b>" + pubs[currentPub].name + "</b>", true);
+                $("nav.pagination .pag-pub-name").text(pubs[currentPub + 1].name);
+                $("nav.pagination .pag-pub-distance").text(pubs[currentPub + 1].distance + " (" + pubs[currentPub + 1].duration + " walking)");
             } else {
                 Map.message(response);
             }
@@ -127,7 +152,7 @@ Pub = {
         var request = {
             placeId: id
         }
-        service.getDetails(request, function (place, status) {
+        searchService.getDetails(request, function (place, status) {
             if (status == google.maps.places.PlacesServiceStatus.OK) {
                 // Map.directions(myLocation, place.geometry.location);
             } else {
@@ -135,37 +160,14 @@ Pub = {
                 Map.search();
             }
         });
-    },
-    addDetails: function (pub_no) {
-        var request = {
-            origin: myLocation,
-            destination: pubs[pub_no].geometry.location,
-            travelMode: google.maps.TravelMode.WALKING
-        };
-        directionsService.route(request, function (response, status) {
-            if (status == google.maps.DirectionsStatus.OK) {
-                var distance = response.routes[0].legs[0].distance.text;
-                var duration = response.routes[0].legs[0].duration.text;
-                pubs[pub_no].distance = distance;
-                pubs[pub_no].duration = duration;
-
-            }
-        });
     }
 }
 UI = {
-    navigation: {
+    buttons: {
         next: function () {
             currentPub++;
             currentPub >= pubs.length ? currentPub = 0 : null;
-            Pub.addDetails(currentPub + 1);
             Map.directions(myLocation, pubs[currentPub].geometry.location);
-            UI.navigation.nextPubDetails();
-        },
-        nextPubDetails: function () {
-            $("nav.pagination .pag-pub-name").text(pubs[currentPub + 1].name);
-            $("nav.pagination .pag-pub-distance").text(pubs[currentPub + 1].distance);
-            console.log(pubs[currentPub + 1].duration);
         }
     }
     /* function () {
@@ -209,7 +211,7 @@ default:
 }
 $("nav.pagination .next").click(function (e) {
     e.preventDefault;
-    UI.navigation.next();
+    UI.buttons.next();
     return false;
 });
 window.onpopstate = function (event) {
