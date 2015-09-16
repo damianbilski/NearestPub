@@ -109,9 +109,7 @@ Map = {
         directionsService.route(request, function (response, status) {
             if (status == google.maps.DirectionsStatus.OK) {
                 directionsDisplay.setDirections(response);
-                directionsDisplay.setOptions({
-                    suppressMarkers: true
-                });
+
                 var myRoute = response.routes[0].legs[0];
                 for (var i = 0; i < myRoute.steps.length; i++) {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
