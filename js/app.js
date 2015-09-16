@@ -12,6 +12,7 @@ var map,
     matrixService,
     directionsDisplay,
     directionsService,
+    searchBox,
     stepsArray = [],
     pubs = {},
     currentPub = 0;
@@ -45,6 +46,12 @@ Map = {
         map = new google.maps.Map(document.getElementById('map'), options);
         searchService = new google.maps.places.PlacesService(map);
         directionsDisplay.setMap(map);
+        var input = document.getElementById('search-box');
+        searchBox = new google.maps.places.SearchBox(input);
+        searchBox.addListener('places_changed', function () {
+            var places = searchBox.getPlaces();
+            console.log(places);
+        });
         if (window.location.href.indexOf("@") > -1) {
             var url = window.location.href;
             var id = url.substr(url.indexOf("@") + 1);
@@ -72,7 +79,6 @@ Map = {
             for (var i = 0; i < pubs.length; i++) {
                 destinations.push(pubs[i].geometry.location);
             }
-            console.log(pubs[currentPub]);
             var request = {
                 origins: [myLocation],
                 destinations: destinations,
@@ -87,7 +93,7 @@ Map = {
                             pubs[j].duration = results[j].duration.text;
                         }
                     }
-                    Map.directions(myLocation, pubs[currentPub].geometry.location);
+                    Map.directions(myLocation, pubs[currentPub]);
                 } else {
                     Map.message(status);
                 }
@@ -103,7 +109,7 @@ Map = {
         stepsArray = [];
         var request = {
             origin: from,
-            destination: to,
+            destination: to.geometry.location,
             travelMode: google.maps.TravelMode.WALKING
         };
         directionsService.route(request, function (response, status) {
@@ -114,9 +120,10 @@ Map = {
                 for (var i = 0; i < myRoute.steps.length; i++) {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
                 }
-                Map.marker(pubs[currentPub].geometry.location, "<b>" + pubs[currentPub].name + "</b>", true);
+                Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
                 $("nav.pagination .pag-pub-name").text(pubs[Pub.count.next()].name);
                 $("nav.pagination .pag-pub-distance").text(pubs[Pub.count.next()].distance + " (" + pubs[Pub.count.next()].duration + " walking)");
+                $("nav.pagination .next").attr("href", "@" + pubs[Pub.count.next()].place_id);
             } else {
                 Map.message("directionsService : " + status);
             }
@@ -145,14 +152,13 @@ Map = {
 }
 Pub = {
     getById: function (id) {
-        // Pub.details(id);
         console.log("Get by ID");
         var request = {
             placeId: id
         }
         searchService.getDetails(request, function (place, status) {
             if (status == google.maps.places.PlacesServiceStatus.OK) {
-                // Map.directions(myLocation, place.geometry.location);
+                Map.directions(myLocation, place);
             } else {
                 console.log("getById status : " + status);
                 Map.search();
@@ -173,42 +179,34 @@ UI = {
         next: function () {
             currentPub++;
             currentPub >= pubs.length ? currentPub = 0 : currentPub;
-            Map.directions(myLocation, pubs[currentPub].geometry.location);
+            UI.buttons.common();
         },
         prev: function () {
             currentPub--;
             currentPub < 0 ? currentPub = pubs.length - 1 : currentPub;
-            Map.directions(myLocation, pubs[currentPub].geometry.location);
+            UI.buttons.common();
+        },
+        common: function () {
+            history.pushState(currentPub, null, "@" + pubs[currentPub].place_id);
+            document.title = pubs[currentPub].name;
+            Map.directions(myLocation, pubs[currentPub]);
         }
     }
-    /* function () {
-            var id = pubs[currentPub].place_id;
-            var name = pubs[currentPub].name;
-            //  var distance
-            console.log(id + ", " + name);
-        } */
 }
 Contact = {
     init: function () {}
 }
 URL = {
     check: function () {
-        var url = window.location.href;
-        var array = url.substr(url.indexOf('localhost/')).split('/');
-        for (var i = 0; i < array.length; i++) {
-            var obj = array[i];
-            obj == "" ? array[i] = "pub" : null;
+            var url = window.location.href;
+            var array = url.substr(url.indexOf('localhost/')).split('/');
+            for (var i = 0; i < array.length; i++) {
+                var obj = array[i];
+                obj == "" ? array[i] = "pub" : null;
+            }
+            return array[1];
         }
-        return array[1];
-    },
-    set: function (url) {
-            var obj = {
-                LatLng: pubs[currentPub].geometry.location
-            };
-            history.pushState(obj, null, url);
-        }
-        /*,
-            link: "http://maps.google.com/maps?saddr=" + encodeURI(myLocation + "&daddr=" + pubs[0].name + ", " + pubs[0].vicinity), */
+        /* link: "http://maps.google.com/maps?saddr=" + encodeURI(myLocation + "&daddr=" + pubs[0].name + ", " + pubs[0].vicinity), */
 }
 switch (URL.check()) {
 case "search":
@@ -230,9 +228,11 @@ $("nav.pagination .prev").click(function (e) {
     UI.buttons.prev();
     return false;
 });
-window.onpopstate = function (event) {
-    if (event && event.state) {
-
-        Map.directions(myLocation, event.state.LatLng);
+window.addEventListener('popstate', function (e) {
+    if (e.state == null) {
+        Map.message("Error : " + e.state);
+    } else {
+        currentPub = e.state;
+        Map.directions(myLocation, pubs[currentPub]);
     }
-}
+});
