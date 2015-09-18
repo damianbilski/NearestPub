@@ -16,11 +16,8 @@ var map,
     stepsArray = [],
     pubs = {},
     currentPub = 0;
-var Map, Pub, Contact, URL, UI = new Object();
+var Map, Pub, Contact, URL, UI = {};
 
-function history_api() {
-    return !!(window.history && history.pushState);
-}
 Map = {
     init: function () {
         if (Modernizr.geolocation) {
@@ -49,8 +46,9 @@ Map = {
         var input = document.getElementById('search-box');
         searchBox = new google.maps.places.SearchBox(input);
         searchBox.addListener('places_changed', function () {
-            var places = searchBox.getPlaces();
-            console.log(places);
+            var place = searchBox.getPlaces();
+            myLocation = place[0].geometry.location;
+            Map.search();
         });
         if (window.location.href.indexOf("@") > -1) {
             var url = window.location.href;
@@ -121,9 +119,9 @@ Map = {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
                 }
                 Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
-                $("nav.pagination .pag-pub-name").text(pubs[Pub.count.next()].name);
-                $("nav.pagination .pag-pub-distance").text(pubs[Pub.count.next()].distance + " (" + pubs[Pub.count.next()].duration + " walking)");
-                $("nav.pagination .next").attr("href", "@" + pubs[Pub.count.next()].place_id);
+                UI.view.nextPubButton();
+                UI.view.prevPubButton();
+                UI.view.mainInfo();
             } else {
                 Map.message("directionsService : " + status);
             }
@@ -175,6 +173,43 @@ Pub = {
     }
 }
 UI = {
+    view: {
+        nextPubButton: function () {
+            $("nav.pagination .next .pag-pub-name").text(pubs[Pub.count.next()].name);
+            $("nav.pagination .next .pag-pub-distance").text(pubs[Pub.count.next()].distance + " (" + pubs[Pub.count.next()].duration + " walking)");
+            $("nav.pagination .next").attr("href", "@" + pubs[Pub.count.next()].place_id);
+        },
+        prevPubButton: function () {
+            $("nav.pagination .prev .pag-pub-name").text(pubs[Pub.count.prev()].name);
+            $("nav.pagination .prev .pag-pub-distance").text(pubs[Pub.count.prev()].distance + " (" + pubs[Pub.count.next()].duration + " walking)");
+            $("nav.pagination .prev").attr("href", "@" + pubs[Pub.count.prev()].place_id);
+        },
+        mainInfo: function () {
+            $("#container .pub-name").text(pubs[currentPub].name);
+            $("#container .pub-distance strong").text(pubs[currentPub].distance);
+            if (pubs[currentPub].photos) {
+                var imageURL = pubs[currentPub].photos[0].getUrl({
+                    'maxWidth': 100,
+                    'maxHeight': 100
+                })
+                $("#container .pub-image").attr("src", imageURL);
+            } else {
+                Map.message("Add Image Placeholder");
+            };
+            var request = {
+                placeId: pubs[currentPub].place_id
+            }
+            searchService.getDetails(request, function (place, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    console.log(place);
+                    $("#container .pub-address").text(place.formatted_address);
+                    $("#container .pub-phone a").attr("href", "tel:" + place.formatted_phone_number).text(place.formatted_phone_number);
+                } else {
+                    Map.message("UI.view.mainInfo()");
+                }
+            })
+        }
+    },
     buttons: {
         next: function () {
             currentPub++;
