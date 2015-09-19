@@ -3,12 +3,14 @@
     padding: 0;
     border: 0;
 }
+
 body {
     background: #181510;
     font-family: 'Open Sans', sans-serif;
     font-weight: 300;
     color: #ffffff;
 }
+
 ul,
 ol,
 h1,
@@ -18,15 +20,18 @@ p {
     margin: 0;
     padding: 0;
 }
+
 ul,
 ol {
     list-style: none;
 }
+
 h1,
 h2,
 h3 {
     color: #ffffff;
 }
+
 #map {
     position: absolute;
     top: 0;
@@ -34,9 +39,11 @@ h3 {
     width: 100%;
     height: 100%;
 }
+
 .loading {
     background: url("../img/preloader.gif") no-repeat center center;
 }
+
 .menu-icon {
     text-indent: 2.1875rem;
     width: 2.8125rem;
@@ -48,6 +55,7 @@ h3 {
     transform: translate3d(0, 0, 0);
     float: left;
 }
+
 .menu-icon span:after {
     content: "";
     position: absolute;
@@ -59,9 +67,11 @@ h3 {
     box-shadow: 0 0px 0 1px white, 0 7px 0 1px white, 0 14px 0 1px white;
     width: 1rem;
 }
+
 .menu-icon span:hover:after {
     box-shadow: 0 0px 0 1px #b3b3b3, 0 7px 0 1px #b3b3b3, 0 14px 0 1px #b3b3b3;
 }
+
 header {
     position: relative;
     width: 100%;
@@ -69,21 +79,26 @@ header {
     background: rgba(0, 0, 0, .85);
     padding: 0 120px;
 }
+
 .divider {
     margin: 0 .5rem;
 }
+
 .off-canvas-wrap,
 .inner-wrap {
     height: 100%;
 }
+
 .logo {
     width: 16rem;
     height: 7rem;
     padding-top: .8rem;
 }
+
 #container {
     padding: 0 120px;
 }
+
 .pub-info {
     position: relative;
     background: #ffffff;
@@ -91,6 +106,7 @@ header {
     font-style: normal;
     width: 16rem;
 }
+
 .pub-image {
     width: 100px;
     height: 100px;
@@ -101,19 +117,23 @@ header {
     -o-border-radius: 50px;
     border-radius: 50px;
 }
+
 .pub-name {
     font-weight: bold;
     font-size: 1.6rem;
     line-height: 2rem;
 }
+
 .pub-distance {
     color: #b3ada3;
     font-size: .9rem;
     margin-bottom: .8rem;
 }
+
 .pub-phone {
     margin: 2rem 0;
 }
+
 .pub-phone a {
     background: url("../img/phone.svg") no-repeat 1rem center;
     background-size: 1.6rem;
@@ -126,36 +146,45 @@ header {
     -o-border-radius: 1.6rem;
     border-radius: 1.6rem;
 }
+
 .address {
     background: #fbfaf7;
     padding: 1.4rem;
 }
+
 .main-nav {
     margin-top: 2.7rem;
 }
+
 .main-nav li {
     float: left;
 }
+
 .main-nav li::after {
     content: "·";
     padding: 0px 1.2rem;
 }
+
 .main-nav li:last-child:after {
     content: none;
     padding: auto;
 }
+
 .main-nav li.search {
     margin-top: -.5rem;
 }
+
 .main-nav a {
     text-transform: uppercase;
     font-size: .9rem;
     font-weight: bold;
     color: #ffffff;
 }
+
 .main-nav form {
     margin-bottom: 0;
 }
+
 .main-nav .search input {
     -webkit-transition: width 0.6s;
     transition: width 0.6s;
@@ -172,6 +201,7 @@ header {
     -moz-border-radius: 1.4rem;
     border-radius: 1.4rem;
 }
+
 .main-nav .search input:focus {
     -webkit-transition: width 0.6s;
     transition: width 0.6s;
@@ -180,11 +210,13 @@ header {
     width: 16rem;
     font-size: .9rem;
 }
+
 .pagination {
     position: absolute;
     width: 100%;
     bottom: 50%;
 }
+
 .pagination a {
     display: block;
     text-align: center;
@@ -193,15 +225,18 @@ header {
     min-height: 120px;
     padding: 60px 10px 10px 10px;
 }
+
 .pagination a.prev {
     background: #181510 url("../img/arrow-previous.svg") no-repeat center 15px;
     background-size: 2.2rem;
 }
+
 .pagination a.next {
     background: #181510 url("../img/arrow-next.svg") no-repeat center 15px;
     background-size: 2.2rem;
     color: #817d75;
 }
+
 .pagination a p.pag-pub-name {
     font-weight: 800;
     font-size: .9rem;
@@ -209,9 +244,11 @@ header {
     letter-spacing: -0.04rem;
     text-transform: uppercase;
 }
+
 .pagination a p.pag-pub-distance {
     font-size: .8rem;
 }
+
 .reveal-modal {
     background: #181510;
     border: 0;
@@ -219,6 +256,7 @@ header {
     -moz-border-radius: .4rem;
     border-radius: .4rem;
 }
+
 footer {
     background: #181510;
     position: absolute;
@@ -227,19 +265,29 @@ footer {
     width: 100%;
     padding: 1rem 120px;
 }
+
 footer h3 {
     font-weight: 800;
     font-size: 1rem;
 }
+
 footer div.columns {
     font-size: .8rem;
 }
+
 @media only screen and (max-width: 40em) {
     header {
         padding: .5rem 0;
     }
     .main-nav {
         margin-top: .6rem;
+    }
+    #container {
+        padding: 0;
+        width: 100%;
+    }
+    #container address {
+        width: 100%;
     }
     .pagination {
         background: #181510;

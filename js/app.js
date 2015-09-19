@@ -7,31 +7,21 @@
 var map,
     geocoder,
     infowindow,
-    myLocation,
+    myLocation = new google.maps.LatLng(53.3450903, -6.263803199999984) /* default : Temple Bar, Dublin, Ireland */ ,
     searchService,
     matrixService,
     directionsDisplay,
     directionsService,
-    searchBox,
+    searchBar,
+    searchNoGeo,
     stepsArray = [],
-    pubs = {},
-    currentPub = 0;
+    pubs = [],
+    currentPub = 0,
+    hasURL = window.location.href.indexOf("@") > -1 ? true : false;
 var Map, Pub, Contact, URL, UI = {};
 
 Map = {
     init: function () {
-        if (Modernizr.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                myLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                Map.load();
-            }, function () {
-                Map.message("Browser disabled GeoLocation");
-            })
-        } else {
-            Map.message("Your browser doesn\'t support GeoLocation")
-        }
-    },
-    load: function () {
         matrixService = new google.maps.DistanceMatrixService();
         directionsService = new google.maps.DirectionsService();
         directionsDisplay = new google.maps.DirectionsRenderer();
@@ -40,16 +30,54 @@ Map = {
             zoom: 15,
             disableDefaultUI: true
         };
-        map = new google.maps.Map(document.getElementById('map'), options);
+        map = new google.maps.Map(document.getElementById("map"), options);
         searchService = new google.maps.places.PlacesService(map);
         directionsDisplay.setMap(map);
-        var input = document.getElementById('search-box');
-        searchBox = new google.maps.places.SearchBox(input);
-        searchBox.addListener('places_changed', function () {
-            var place = searchBox.getPlaces();
+        var barSearch = document.getElementById("search-box");
+        var noGeoSearch = document.getElementById("no-geo-search");
+        searchBar = new google.maps.places.SearchBox(barSearch);
+        searchNoGeo = new google.maps.places.SearchBox(noGeoSearch);
+        searchBar.addListener('places_changed', function () {
+            var place = searchBar.getPlaces();
             myLocation = place[0].geometry.location;
-            Map.search();
+            if (hasURL) {
+                var url = window.location.href;
+                var place_id = url.substr(url.indexOf("@") + 1);
+                Pub.getById(place_id);
+            } else {
+                Map.search();
+            }
         });
+        searchNoGeo.addListener('places_changed', function () {
+            var place = searchNoGeo.getPlaces();
+            myLocation = place[0].geometry.location;
+            $("#no-geolocation").foundation("reveal", "close");
+            if (hasURL) {
+                var url = window.location.href;
+                var place_id = url.substr(url.indexOf("@") + 1);
+                Pub.getById(place_id);
+            } else {
+                Map.search();
+            }
+        });
+        if (Modernizr.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                myLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                if (hasURL) {
+                    var url = window.location.href;
+                    var place_id = url.substr(url.indexOf("@") + 1);
+                    Pub.getById(place_id);
+                } else {
+                    Map.search();
+                }
+            }, function () {
+                Map.message("Browser disabled GeoLocation");
+                $("#no-geolocation").foundation("reveal", "open");
+            })
+        } else {
+            Map.message("Your browser doesn\'t support GeoLocation")
+        }
+        /* 
         if (window.location.href.indexOf("@") > -1) {
             var url = window.location.href;
             var id = url.substr(url.indexOf("@") + 1);
@@ -59,7 +87,7 @@ Map = {
         }
         google.maps.event.addListener(map, 'tilesloaded', function (evt) {
             $("map").removeClass("loading");
-        });
+        }); */
     },
     search: function () {
         var request = {
@@ -113,15 +141,15 @@ Map = {
         directionsService.route(request, function (response, status) {
             if (status == google.maps.DirectionsStatus.OK) {
                 directionsDisplay.setDirections(response);
-
                 var myRoute = response.routes[0].legs[0];
                 for (var i = 0; i < myRoute.steps.length; i++) {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
                 }
                 Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
-                UI.view.nextPubButton();
-                UI.view.prevPubButton();
+                // UI.view.nextPubButton();
+                // UI.view.prevPubButton();
                 UI.view.mainInfo();
+                URL.set();
             } else {
                 Map.message("directionsService : " + status);
             }
@@ -156,7 +184,26 @@ Pub = {
         }
         searchService.getDetails(request, function (place, status) {
             if (status == google.maps.places.PlacesServiceStatus.OK) {
-                Map.directions(myLocation, place);
+                pubs.push(place);
+                var request = {
+                    origins: [myLocation],
+                    destinations: [place.geometry.location],
+                    travelMode: google.maps.TravelMode.WALKING
+                }
+                matrixService.getDistanceMatrix(request, function (response, status) {
+                    if (status == google.maps.DistanceMatrixStatus.OK) {
+                        for (var i = 0; i < response.originAddresses.length; i++) {
+                            var results = response.rows[i].elements;
+                            for (var j = 0; j < results.length; j++) {
+                                pubs[j].distance = results[j].distance.text;
+                                pubs[j].duration = results[j].duration.text;
+                            }
+                        }
+                        Map.directions(myLocation, place);
+                    } else {
+                        Map.message(status);
+                    }
+                });
             } else {
                 console.log("getById status : " + status);
                 Map.search();
@@ -185,7 +232,7 @@ UI = {
             $("nav.pagination .prev").attr("href", "@" + pubs[Pub.count.prev()].place_id);
         },
         mainInfo: function () {
-            $("#container .pub-name").text(pubs[currentPub].name);
+            $("#container .pub-name a").attr("href", URL.link()).text(pubs[Pub.count.next()].name).text(pubs[currentPub].name);
             $("#container .pub-distance strong").text(pubs[currentPub].distance);
             if (pubs[currentPub].photos) {
                 var imageURL = pubs[currentPub].photos[0].getUrl({
@@ -201,9 +248,15 @@ UI = {
             }
             searchService.getDetails(request, function (place, status) {
                 if (status == google.maps.places.PlacesServiceStatus.OK) {
-                    console.log(place);
+                    var isOpen;
+                    if (place.opening_hours) {
+                        place.opening_hours.open_now ? isOpen = "Open :)" : isOpen = "Closed :(";
+                    } else {
+                        var isOpen = "";
+                    }
+                    $("#container .pub-open").text(isOpen)
                     $("#container .pub-address").text(place.formatted_address);
-                    $("#container .pub-phone a").attr("href", "tel:" + place.formatted_phone_number).text(place.formatted_phone_number);
+                    $("#container .pub-phone a").attr("href", "tel:" + place.formatted_phone_number).text(place.international_phone_number);
                 } else {
                     Map.message("UI.view.mainInfo()");
                 }
@@ -222,8 +275,7 @@ UI = {
             UI.buttons.common();
         },
         common: function () {
-            history.pushState(currentPub, null, "@" + pubs[currentPub].place_id);
-            document.title = pubs[currentPub].name;
+            URL.set();
             Map.directions(myLocation, pubs[currentPub]);
         }
     }
@@ -233,26 +285,23 @@ Contact = {
 }
 URL = {
     check: function () {
-            var url = window.location.href;
-            var array = url.substr(url.indexOf('localhost/')).split('/');
-            for (var i = 0; i < array.length; i++) {
-                var obj = array[i];
-                obj == "" ? array[i] = "pub" : null;
-            }
-            return array[1];
+        var url = window.location.href;
+        var array = url.substr(url.indexOf('localhost/')).split('/');
+        for (var i = 0; i < array.length; i++) {
+            var obj = array[i];
+            obj == "" ? array[i] = "pub" : null;
         }
-        /* link: "http://maps.google.com/maps?saddr=" + encodeURI(myLocation + "&daddr=" + pubs[0].name + ", " + pubs[0].vicinity), */
+        return array[1];
+    },
+    set: function () {
+        history.pushState(currentPub, null, "@" + pubs[currentPub].place_id);
+        document.title = pubs[currentPub].name + " - The Nearst Pub";
+    },
+    link: function () {
+        return "http://maps.google.com/maps?saddr=" + encodeURI(myLocation + "&daddr=" + pubs[currentPub].name + ", " + pubs[currentPub].vicinity);
+    }
 }
-switch (URL.check()) {
-case "search":
-    Search.init();
-    break;
-case "contact":
-    Contact.init();
-    break;
-default:
-    Map.init();
-}
+
 $("nav.pagination .next").click(function (e) {
     e.preventDefault;
     UI.buttons.next();
@@ -271,3 +320,4 @@ window.addEventListener('popstate', function (e) {
         Map.directions(myLocation, pubs[currentPub]);
     }
 });
+Map.init();
