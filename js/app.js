@@ -20,6 +20,28 @@ var map,
     hasURL = window.location.href.indexOf("@") > -1 ? true : false;
 var Map, Pub, Contact, URL, UI = {};
 
+/* 
+if(url) {
+    if(geo) {
+        geo_to_url
+    } else {
+        
+    }
+} else {
+    if(geo) {
+        search  
+    } 
+}
+
+if (url && geo) {
+    geo_to_url   
+} else if (geo) {
+    search
+} else {
+    error   
+}
+
+*/
 Map = {
     init: function () {
         matrixService = new google.maps.DistanceMatrixService();
