@@ -99,6 +99,14 @@ header {
     padding: 0 120px;
 }
 
+#container address.mini > * {
+    display: none;
+}
+
+#container address.mini .pub-name {
+    display: block;
+}
+
 .pub-info {
     position: relative;
     background: #ffffff;
