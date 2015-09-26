@@ -319,4 +319,4 @@ window.addEventListener('popstate', function (e) {
         Map.directions(myLocation, pubs[currentPub]);
     }
 });
-// Map.init();
+Map.init();

@@ -107,28 +107,46 @@ header {
     display: block;
 }
 
-.pub-name {
-    font-weight: bold;
-    font-size: 1.6rem;
-    line-height: 2rem;
-    text-transform: uppercase;
-}
-
-.pub-name a {
-    color: #181510
-}
-
-.pub-distance {
-    color: #b3ada3;
-    font-size: .9rem;
-}
-
 .pub-info {
     position: relative;
     background: #ffffff;
     color: #181510;
     font-style: normal;
     width: 16rem;
+}
+
+.pub-name {
+    font-weight: bold;
+    font-size: 1.6rem;
+    line-height: 1.6rem;
+    text-transform: uppercase;
+    padding-top: 1rem;
+}
+
+.pub-open {
+    -webkit-border-radius: .2rem;
+    -moz-border-radius: .2rem;
+    -ms-border-radius: .2rem;
+    -o-border-radius: .2rem;
+    border-radius: .2rem;
+    border: 1px #b3ada3 solid;
+    padding: .1rem .4rem;
+    font-size: .7rem;
+}
+
+.pub-open.open {
+    color: #31953e;
+    border-color: #31953e;
+}
+
+.pub-distance {
+    color: #b3ada3;
+    font-size: .8rem;
+    padding-top: .5rem;
+}
+
+.pub-name a {
+    color: #181510
 }
 
 .pub-image {
@@ -140,7 +158,7 @@ header {
     -o-border-radius: 50px;
     border-radius: 50px;
     border: .2rem #ffffff solid;
-    margin-bottom: -50px;
+    margin: .5rem 0 -50px 0;
 }
 
 .pub-phone {
@@ -161,8 +179,9 @@ header {
 }
 
 section.address {
-    background: #fbfaf7;
-    padding: 4rem 0 1rem 0;
+    background: #181510;
+    color: #ffffff;
+    padding: 4rem 1rem 1rem 1rem;
 }
 
 .main-nav {
