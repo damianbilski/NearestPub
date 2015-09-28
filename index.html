@@ -12,10 +12,11 @@
     <script src="/js/vendor/modernizr.js"></script>
 </head>
 
-<body>
+<body class="loading">
     <div class="off-canvas-wrap" data-offcanvas>
         <div class="inner-wrap">
             <aside class="left-off-canvas-menu">
+                <img src="/img/logo.png">
                 <article>
                     <p>Wherever you end up in the world there's a good chance you're not too far from an Irish pub.</p>Whether it's a Peruvian mountain top or downtown Hong Kong, the Irish have found a way to open a pub and add a taste of home. The Nearest Irish Pub helps you find these local gems around the world.</article>
                 <nav>
@@ -50,14 +51,16 @@
                 </header>
                 <div id="container">
                     <div class="row clearfix">
-                        <address class="pub-info left text-center">
+                        <address class="pub-info left text-center short">
+                        <img src="img/preloader_white.gif" class="content-loader">
                         <p class="pub-name"><a href="" target="_blank">The Bernard Shaw Pub Dublin</a></p>
-                        <p class="pub-distance"><span class="pub-open open">Open Now!</span> · 0.56 km · <strong>4 min</strong> walking</p>
+                        <p class="pub-matrix"><span class="pub-open closed">Open Now!</span> · <span class="pub-distance">0.56 km</span> · <span class="pub-time">4min</span> walking</p>
                         <img src="/img/pub.jpg" class="pub-image">
                         <section class="address">
                             <p class="pub-address">8 Poolbeg Street, Dublin 2, Ireland</p>
                             <p class="pub-phone"><a href="tel:+18506484200">850-648-4200</a></p>
                         </section>
+                            <button class="toggleInfo show-for-small-only"></button>
                     </address>
                     </div>
                 </div>

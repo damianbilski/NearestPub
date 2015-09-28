@@ -40,8 +40,12 @@ h3 {
     height: 100%;
 }
 
-.loading {
-    background: url("../img/preloader.gif") no-repeat center center;
+body.loading > * {
+    visibility: hidden;
+}
+
+body.loading {
+    background: #181510 url("../img/preloader.gif") no-repeat center center;
 }
 
 .menu-icon {
@@ -99,12 +103,27 @@ header {
     padding: 0 120px;
 }
 
-#container address.mini > section.address {
+#container address.loading > * {
     display: none;
 }
 
-#container address.mini .pub-name {
+#container address.loading .content-loader {
     display: block;
+}
+
+#container address.short > section.address {
+    display: none;
+}
+
+#container address.short .pub-name {
+    display: block;
+}
+
+#container .content-loader {
+    width: 40px;
+    height: auto;
+    display: none;
+    margin: 1rem auto;
 }
 
 .pub-info {
@@ -115,12 +134,25 @@ header {
     width: 16rem;
 }
 
+button.toggleInfo {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    width: 10px;
+    height: 30px;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    background: url("../img/exp.svg") no-repeat;
+    background-size: contain;
+}
+
 .pub-name {
     font-weight: bold;
     font-size: 1.6rem;
     line-height: 1.6rem;
     text-transform: uppercase;
-    padding-top: 1rem;
+    padding: 1rem 2rem 1rem 1rem;
 }
 
 .pub-open {
@@ -134,15 +166,25 @@ header {
     font-size: .7rem;
 }
 
+.pub-matrix {
+    font-size: .8rem;
+    color: #b3ada3;
+}
+
 .pub-open.open {
     color: #31953e;
     border-color: #31953e;
 }
 
-.pub-distance {
-    color: #b3ada3;
-    font-size: .8rem;
-    padding-top: .5rem;
+.pub-open.closed {
+    color: #FE4365;
+    border-color: #FE4365;
+}
+
+.pub-distance {}
+
+.pub-time {
+    font-weight: bold;
 }
 
 .pub-name a {
@@ -157,12 +199,16 @@ header {
     -ms-border-radius: 50px;
     -o-border-radius: 50px;
     border-radius: 50px;
-    border: .2rem #ffffff solid;
-    margin: .5rem 0 -50px 0;
+    border: 2px #ffffff solid;
+    margin-bottom: -50px;
+}
+
+.pub-address {
+    padding: 0rem 1rem;
 }
 
 .pub-phone {
-    margin: 1rem 0;
+    margin: 1.4rem 0;
 }
 
 .pub-phone a {

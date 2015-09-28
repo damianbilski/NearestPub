@@ -11,16 +11,17 @@ var map,
     searchNoGeo,
     stepsArray = [],
     pubs = [],
-    currentPub = 0
+    currentPub = 0,
+    is_mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 var Map, Pub, Contact, URL, UI = {};
 var services = {
     directions: {
         set: new google.maps.DirectionsService(),
         display: new google.maps.DirectionsRenderer()
     },
-    matrix: new google.maps.DistanceMatrixService()
+    matrix: new google.maps.DistanceMatrixService(),
+    geomarker: new GeolocationMarker()
 }
-
 
 /* 
 if(url) {
@@ -83,10 +84,12 @@ Map = {
                 $("#no-geolocation").foundation("reveal", "close");
             });
         }
-        /* 
-               google.maps.event.addListener(map, 'tilesloaded', function (evt) {
-                   $("map").removeClass("loading");
-               }); */
+        if (is_mobile) {
+            UI.view.geomarker();
+        }
+        google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
+            $("body").removeClass("loading");
+        });
     },
     search: function () {
         var request = {
@@ -128,6 +131,7 @@ Map = {
         }
     },
     directions: function (from, to) {
+        $("#container address").addClass("loading");
         for (var i = 0; i < stepsArray.length; i++) {
             stepsArray[i].setMap(null);
         }
@@ -145,8 +149,8 @@ Map = {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
                 }
                 Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
-                // UI.view.nextPubButton();
-                // UI.view.prevPubButton();
+                UI.view.nextPubButton();
+                UI.view.prevPubButton();
                 UI.view.mainInfo();
                 URL.set();
             } else {
@@ -178,6 +182,7 @@ Map = {
 Pub = {
     getById: function (id) {
         console.log("Get by ID : " + id);
+        $("nav.pagination").hide();
         var request = {
             placeId: id
         }
@@ -233,7 +238,8 @@ UI = {
         },
         mainInfo: function () {
             $("#container .pub-name a").attr("href", URL.link()).text(pubs[Pub.count.next()].name).text(pubs[currentPub].name);
-            $("#container .pub-distance strong").text(pubs[currentPub].distance);
+            $("#container .pub-matrix .pub-distance").text(pubs[currentPub].distance);
+            $("#container .pub-matrix .pub-time").text(pubs[currentPub].duration);
             if (pubs[currentPub].photos) {
                 var imageURL = pubs[currentPub].photos[0].getUrl({
                     'maxWidth': 100,
@@ -257,10 +263,25 @@ UI = {
                     $("#container .pub-open").text(isOpen)
                     $("#container .pub-address").text(place.formatted_address);
                     $("#container .pub-phone a").attr("href", "tel:" + place.formatted_phone_number).text(place.international_phone_number);
+
+                    $("#container address").removeClass("loading");
                 } else {
                     Map.message("UI.view.mainInfo()");
                 }
             })
+        },
+        geomarker: function () {
+            services.geomarker.setCircleOptions({
+                fillColor: '#808080'
+            });
+            google.maps.event.addListenerOnce(services.geomarker, 'position_changed', function () {
+                map.setCenter(this.getPosition());
+                map.fitBounds(this.getBounds());
+            });
+            google.maps.event.addListener(services.geomarker, 'geolocation_error', function (e) {
+                alert('There was an error obtaining your position. Message: ' + e.message);
+            });
+            services.geomarker.setMap(map);
         }
     },
     buttons: {
@@ -310,7 +331,9 @@ $("nav.pagination .prev").click(function (e) {
     UI.buttons.prev();
     return false;
 });
-
+$("button.toggleInfo").click(function (e) {
+    $("address.pub-info").toggleClass("short");
+});
 window.addEventListener('popstate', function (e) {
     if (e.state == null) {
         Map.message("Error : " + e.state);
