@@ -8,7 +8,7 @@ body {
     background: #181510;
     font-family: 'Open Sans', sans-serif;
     font-weight: 300;
-    color: #ffffff;
+    color: #8c7e65;
 }
 
 ul,
@@ -29,6 +29,15 @@ ol {
 h1,
 h2,
 h3 {
+    color: #ffffff;
+}
+
+a {
+    font-weight: 400;
+    color: #f1f1f1;
+}
+
+a:hover {
     color: #ffffff;
 }
 
@@ -263,7 +272,8 @@ section.address {
     margin-bottom: 0;
 }
 
-.main-nav .search input {
+.main-nav .search input,
+.reveal-modal input {
     -webkit-transition: width 0.6s;
     transition: width 0.6s;
     background: url("../img/search.svg") no-repeat 1rem center;
@@ -280,13 +290,18 @@ section.address {
     border-radius: 1.4rem;
 }
 
-.main-nav .search input:focus {
-    -webkit-transition: width 0.6s;
-    transition: width 0.6s;
+.main-nav .search input:focus,
+.reveal-modal input:focus {
     border: 1px solid #888888;
     outline: none;
     width: 16rem;
     font-size: .9rem;
+    background: url("../img/search.svg") no-repeat 1rem center;
+}
+
+.reveal-modal input {
+    width: 70%;
+    margin: 1rem auto;
 }
 
 .pagination {
@@ -327,12 +342,42 @@ section.address {
     font-size: .8rem;
 }
 
+.reveal-modal-bg {
+    z-index: 10;
+}
+
 .reveal-modal {
+    z-index: 11;
     background: #181510;
     border: 0;
-    -webkit-border-radius: .4rem;
-    -moz-border-radius: .4rem;
-    border-radius: .4rem;
+    padding: 3rem 1rem;
+    text-align: center;
+    -webkit-border-radius: .6rem;
+    -moz-border-radius: .6rem;
+    -ms-border-radius: .6rem;
+    -o-border-radius: .6rem;
+    border-radius: .6rem;
+}
+
+.reveal-modal h2 {
+    font-size: 1.4rem;
+    padding: 1rem 0;
+}
+
+.reveal-modal p {
+    font-size: .9rem;
+}
+
+.reveal-modal nav.modal-nav {
+    position: absolute;
+    left: 0rem;
+    bottom: 1rem;
+    width: 100%;
+}
+
+.modal-logo {
+    width: 10rem;
+    height: auto;
 }
 
 footer {

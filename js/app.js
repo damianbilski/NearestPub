@@ -65,8 +65,7 @@ Map = {
                     Map.search();
                 }
             }, function () {
-                Map.message("Browser disabled GeoLocation");
-                $("#no-geolocation").foundation("reveal", "open");
+                UI.message("Browser disabled GeoLocation");
             });
         }
         var searchBoxes = ["search-box", "modal-search-box"];
@@ -81,7 +80,7 @@ Map = {
                 } else {
                     Map.search();
                 }
-                $("#no-geolocation").foundation("reveal", "close");
+                $("#general-modal").foundation("reveal", "close");
             });
         }
         if (is_mobile) {
@@ -123,11 +122,11 @@ Map = {
                     }
                     Map.directions(myLocation, pubs[currentPub]);
                 } else {
-                    Map.message(status);
+                    UI.message(status);
                 }
             });
         } else {
-            Map.message(status);
+            UI.message(status);
         }
     },
     directions: function (from, to) {
@@ -154,7 +153,7 @@ Map = {
                 UI.view.mainInfo();
                 URL.set();
             } else {
-                Map.message("directionsService : " + status);
+                UI.message("directionsService : " + status);
             }
         });
     },
@@ -174,9 +173,6 @@ Map = {
         }
         stepsArray.push(marker);
         // return marker;
-    },
-    message: function (msg) {
-        console.log("Message : " + msg);
     }
 }
 Pub = {
@@ -206,7 +202,7 @@ Pub = {
                         }
                         Map.directions(myLocation, place);
                     } else {
-                        Map.message(status + ", " + response.rows[0].elements[0].status);
+                        UI.message(status + ", " + response.rows[0].elements[0].status);
                     }
                 });
             } else {
@@ -247,7 +243,7 @@ UI = {
                 })
                 $("#container .pub-image").attr("src", imageURL);
             } else {
-                Map.message("Add Image Placeholder");
+                console.log("Add Image Placeholder");
             };
             var request = {
                 placeId: pubs[currentPub].place_id
@@ -266,7 +262,7 @@ UI = {
 
                     $("#container address").removeClass("loading");
                 } else {
-                    Map.message("UI.view.mainInfo()");
+                    UI.message("UI.view.mainInfo()");
                 }
             })
         },
@@ -299,6 +295,12 @@ UI = {
             URL.set();
             Map.directions(myLocation, pubs[currentPub]);
         }
+    },
+    message: function (msg) {
+        console.log(msg);
+        var $modal = $("#general-modal");
+        $(".reveal-message", $modal).text(msg);
+        $modal.foundation("reveal", "open");
     }
 }
 Contact = {
@@ -336,7 +338,7 @@ $("button.toggleInfo").click(function (e) {
 });
 window.addEventListener('popstate', function (e) {
     if (e.state == null) {
-        Map.message("Error : " + e.state);
+        UI.message("Error : " + e.state);
     } else {
         currentPub = e.state;
         Map.directions(myLocation, pubs[currentPub]);
