@@ -5,7 +5,9 @@
 
 
 var map,
-    infowindow,
+    infowindow = new google.maps.InfoWindow({
+        disableAutoPan: true
+    }),
     myLocation = new google.maps.LatLng(53.3450903, -6.263803199999984) /* default : Temple Bar, Dublin, Ireland */ ,
     searchBar,
     searchNoGeo,
@@ -17,40 +19,32 @@ var Map, Pub, Contact, URL, UI = {};
 var services = {
     directions: {
         set: new google.maps.DirectionsService(),
-        display: new google.maps.DirectionsRenderer()
+        display: new google.maps.DirectionsRenderer({
+            preserveViewport: true
+        })
     },
     matrix: new google.maps.DistanceMatrixService(),
     geomarker: new GeolocationMarker()
 }
 
-/* 
-if(url) {
-    if(geo) {
-        geo_to_url
-    } else {
-        
-    }
-} else {
-    if(geo) {
-        search  
-    } 
-}
-
-if (url && geo) {
-    geo_to_url   
-} else if (geo) {
-    searchPlace
-} else {
-    error   
-}
-
-*/
+/* google.maps.Map.prototype.setCenterWithOffset = function (latlng, offsetX, offsetY) {
+    var map = this;
+    var ov = new google.maps.OverlayView();
+    ov.onAdd = function () {
+        var proj = this.getProjection();
+        var aPoint = proj.fromLatLngToContainerPixel(latlng);
+        aPoint.x = aPoint.x + offsetX;
+        aPoint.y = aPoint.y + offsetY;
+        map.setCenter(proj.fromContainerPixelToLatLng(aPoint));
+    };
+    ov.draw = function () {};
+    ov.setMap(this);
+}; */
 Map = {
     init: function () {
         var options = {
             center: myLocation,
-            zoom: 15,
-            disableDefaultUI: true
+            zoom: 15
         };
         map = new google.maps.Map(document.getElementById("map"), options);
         // SET SERVICES
@@ -84,6 +78,7 @@ Map = {
             });
         }
         if (is_mobile) {
+            $("#container address").addClass("short");
             UI.view.geomarker();
         }
         google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
@@ -102,6 +97,7 @@ Map = {
     callback: function (results, status) {
         if (status == google.maps.places.PlacesServiceStatus.OK) {
             pubs = results;
+            URL.set(); // initial URL set;
             var destinations = [];
             for (var i = 0; i < pubs.length; i++) {
                 destinations.push(pubs[i].geometry.location);
@@ -148,17 +144,17 @@ Map = {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
                 }
                 Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
+                map.setCenter(myLocation);
+                // map.setCenterWithOffset(myLocation, 0, -50);
                 UI.view.nextPubButton();
                 UI.view.prevPubButton();
                 UI.view.mainInfo();
-                URL.set();
             } else {
                 UI.message("directionsService : " + status);
             }
         });
     },
     marker: function (place, content, open) {
-        infowindow = new google.maps.InfoWindow();
         var marker = new google.maps.Marker({
             map: map,
             position: place
@@ -192,7 +188,6 @@ Pub = {
                 }
                 services.matrix.getDistanceMatrix(request, function (response, status) {
                     if (status == google.maps.DistanceMatrixStatus.OK && response.rows[0].elements[0].status == "OK") {
-                        console.log(response.rows[0].elements[0].status);
                         for (var i = 0; i < response.originAddresses.length; i++) {
                             var results = response.rows[i].elements;
                             for (var j = 0; j < results.length; j++) {
@@ -233,7 +228,7 @@ UI = {
             $("nav.pagination .prev").attr("href", "@" + pubs[Pub.count.prev()].place_id);
         },
         mainInfo: function () {
-            $("#container .pub-name a").attr("href", URL.link()).text(pubs[Pub.count.next()].name).text(pubs[currentPub].name);
+            $("#container .pub-name").text(pubs[currentPub].name);
             $("#container .pub-matrix .pub-distance").text(pubs[currentPub].distance);
             $("#container .pub-matrix .pub-time").text(pubs[currentPub].duration);
             if (pubs[currentPub].photos) {
@@ -315,6 +310,7 @@ URL = {
         }
     },
     set: function () {
+        console.log(currentPub);
         history.pushState(currentPub, null, "@" + pubs[currentPub].place_id);
         document.title = pubs[currentPub].name + " - The Nearst Pub";
     },
@@ -340,6 +336,7 @@ window.addEventListener('popstate', function (e) {
     if (e.state == null) {
         UI.message("Error : " + e.state);
     } else {
+        console.log("e.state : " + e.state);
         currentPub = e.state;
         Map.directions(myLocation, pubs[currentPub]);
     }

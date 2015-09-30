@@ -85,6 +85,14 @@ body.loading {
     box-shadow: 0 0px 0 1px #b3b3b3, 0 7px 0 1px #b3b3b3, 0 14px 0 1px #b3b3b3;
 }
 
+aside.left-off-canvas-menu {
+    background: #181510;
+}
+
+aside.left-off-canvas-menu section {
+    padding: 3rem 1rem;
+}
+
 header {
     position: relative;
     width: 100%;
@@ -124,10 +132,6 @@ header {
     display: none;
 }
 
-#container address.short .pub-name {
-    display: block;
-}
-
 #container .content-loader {
     width: 40px;
     height: auto;
@@ -145,7 +149,7 @@ header {
 
 button.toggleInfo {
     position: absolute;
-    top: 20px;
+    top: 15px;
     right: 10px;
     width: 10px;
     height: 30px;
@@ -161,7 +165,13 @@ button.toggleInfo {
     font-size: 1.6rem;
     line-height: 1.6rem;
     text-transform: uppercase;
-    padding: 1rem 2rem 1rem 1rem;
+    padding: 1rem 2.2rem .4rem 1rem;
+}
+
+address.short .pub-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .pub-open {
@@ -178,6 +188,7 @@ button.toggleInfo {
 .pub-matrix {
     font-size: .8rem;
     color: #b3ada3;
+    padding-bottom: .8rem;
 }
 
 .pub-open.open {
@@ -213,7 +224,7 @@ button.toggleInfo {
 }
 
 .pub-address {
-    padding: 0rem 1rem;
+    padding: 0rem .8rem;
 }
 
 .pub-phone {
