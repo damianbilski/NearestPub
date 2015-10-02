@@ -44,7 +44,8 @@ Map = {
     init: function () {
         var options = {
             center: myLocation,
-            zoom: 15
+            zoom: 15,
+            disableDefaultUI: false
         };
         map = new google.maps.Map(document.getElementById("map"), options);
         // SET SERVICES
@@ -142,13 +143,30 @@ Map = {
                 var myRoute = response.routes[0].legs[0];
                 for (var i = 0; i < myRoute.steps.length; i++) {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
+                    // console.log("Marker " + i + " : " + myRoute.steps[i].start_location);
                 }
+                var lineSymbol = {
+                    path: 'M 0,-1 0,1',
+                    strokeOpacity: 1,
+                    scale: 4
+                };
+                var line = new google.maps.Polyline({
+                    path: [myRoute.steps[myRoute.steps.length - 1].end_point, to.geometry.location],
+                    strokeOpacity: 0,
+                    strokeColor: "#7d7d7d",
+                    icons: [{
+                        icon: lineSymbol,
+                        offset: '0',
+                        repeat: '20px'
+                    }],
+                    map: map
+                });
                 Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
-                map.setCenter(myLocation);
-                // map.setCenterWithOffset(myLocation, 0, -50);
-                UI.view.nextPubButton();
-                UI.view.prevPubButton();
-                UI.view.mainInfo();
+                /*         map.setCenter(myLocation);
+                         // map.setCenterWithOffset(myLocation, 0, -50);
+                         UI.view.nextPubButton();
+                         UI.view.prevPubButton();
+                         UI.view.mainInfo(); */
             } else {
                 UI.message("directionsService : " + status);
             }
