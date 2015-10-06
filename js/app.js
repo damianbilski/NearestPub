@@ -14,6 +14,7 @@ var map,
     stepsArray = [],
     pubs = [],
     currentPub = 0,
+    lastLeg,
     is_mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 var Map, Pub, Contact, URL, UI = {};
 var services = {
@@ -143,14 +144,14 @@ Map = {
                 var myRoute = response.routes[0].legs[0];
                 for (var i = 0; i < myRoute.steps.length; i++) {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
-                    // console.log("Marker " + i + " : " + myRoute.steps[i].start_location);
                 }
                 var lineSymbol = {
                     path: 'M 0,-1 0,1',
                     strokeOpacity: 1,
                     scale: 4
                 };
-                var line = new google.maps.Polyline({
+                lastLeg ? lastLeg.setMap(null) : null;
+                lastLeg = new google.maps.Polyline({
                     path: [myRoute.steps[myRoute.steps.length - 1].end_point, to.geometry.location],
                     strokeOpacity: 0,
                     strokeColor: "#7d7d7d",
@@ -162,11 +163,11 @@ Map = {
                     map: map
                 });
                 Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
-                /*         map.setCenter(myLocation);
-                         // map.setCenterWithOffset(myLocation, 0, -50);
-                         UI.view.nextPubButton();
-                         UI.view.prevPubButton();
-                         UI.view.mainInfo(); */
+                map.setCenter(myLocation);
+                // map.setCenterWithOffset(myLocation, 0, -50);
+                UI.view.nextPubButton();
+                UI.view.prevPubButton();
+                UI.view.mainInfo();
             } else {
                 UI.message("directionsService : " + status);
             }
