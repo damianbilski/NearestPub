@@ -84,15 +84,14 @@ Map = {
             UI.view.geomarker();
         }
         google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
-            $("body").removeClass("loading");
+            // $("body").removeClass("loading");
         });
     },
     search: function () {
         var request = {
             location: myLocation,
             rankBy: google.maps.places.RankBy.DISTANCE,
-            types: ['bar', 'cafe', 'food', 'liquor_store', 'lodging', 'meal_delivery', 'meal_takeaway', 'night_club', 'restaurant'],
-            keyword: ['irish pub', 'irish', 'pub']
+            keyword: ['pub']
         };
         services.search.nearbySearch(request, Map.callback);
     },
@@ -128,7 +127,8 @@ Map = {
         }
     },
     directions: function (from, to) {
-        $("#container address").addClass("loading");
+        // $("#container address").addClass("loading");
+        $("body").addClass("loading");
         for (var i = 0; i < stepsArray.length; i++) {
             stepsArray[i].setMap(null);
         }
@@ -274,7 +274,8 @@ UI = {
                     $("#container .pub-address").text(place.formatted_address);
                     $("#container .pub-phone a").attr("href", "tel:" + place.formatted_phone_number).text(place.international_phone_number);
 
-                    $("#container address").removeClass("loading");
+                    // $("#container address").removeClass("loading");
+                    $("body").removeClass("loading");
                 } else {
                     UI.message("UI.view.mainInfo()");
                 }
