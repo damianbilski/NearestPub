@@ -14,6 +14,7 @@ var map,
     stepsArray = [],
     pubs = [],
     currentPub = 0,
+    line,
     is_mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 var Map, Pub, Contact, URL, UI = {};
 var services = {
@@ -144,13 +145,14 @@ Map = {
                 for (var i = 0; i < myRoute.steps.length; i++) {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
                     // console.log("Marker " + i + " : " + myRoute.steps[i].start_location);
-                }
+                };
+                line ? line.setMap(null) : null;
                 var lineSymbol = {
                     path: 'M 0,-1 0,1',
                     strokeOpacity: 1,
                     scale: 4
                 };
-                var line = new google.maps.Polyline({
+                line = new google.maps.Polyline({
                     path: [myRoute.steps[myRoute.steps.length - 1].end_point, to.geometry.location],
                     strokeOpacity: 0,
                     strokeColor: "#7d7d7d",
