@@ -46,7 +46,7 @@ Map = {
         var options = {
             center: myLocation,
             zoom: 15,
-            disableDefaultUI: false
+            disableDefaultUI: true
         };
         map = new google.maps.Map(document.getElementById("map"), options);
         // SET SERVICES
@@ -98,6 +98,7 @@ Map = {
     callback: function (results, status) {
         if (status == google.maps.places.PlacesServiceStatus.OK) {
             pubs = results;
+            console.log(pubs);
             URL.set(); // initial URL set;
             var destinations = [];
             for (var i = 0; i < pubs.length; i++) {
@@ -118,6 +119,9 @@ Map = {
                         }
                     }
                     Map.directions(myLocation, pubs[currentPub]);
+                    $("nav.pagination").show();
+                    UI.view.nextPubButton();
+                    UI.view.prevPubButton();
                 } else {
                     UI.message(status);
                 }
@@ -165,8 +169,6 @@ Map = {
                 Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
                 map.setCenter(myLocation);
                 // map.setCenterWithOffset(myLocation, 0, -50);
-                UI.view.nextPubButton();
-                UI.view.prevPubButton();
                 UI.view.mainInfo();
             } else {
                 UI.message("directionsService : " + status);
@@ -351,6 +353,10 @@ $("nav.pagination .prev").click(function (e) {
 });
 $("button.toggleInfo").click(function (e) {
     $("address.pub-info").toggleClass("short");
+});
+$("a#show_more").click(function (e) {
+    e.preventDefault();
+    Map.search();
 });
 window.addEventListener('popstate', function (e) {
     if (e.state == null) {
