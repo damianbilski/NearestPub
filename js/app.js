@@ -119,9 +119,6 @@ Map = {
                         }
                     }
                     Map.directions(myLocation, pubs[currentPub]);
-                    $("nav.pagination").show();
-                    UI.view.nextPubButton();
-                    UI.view.prevPubButton();
                 } else {
                     UI.message(status);
                 }
@@ -169,6 +166,9 @@ Map = {
                 Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
                 map.setCenter(myLocation);
                 // map.setCenterWithOffset(myLocation, 0, -50);
+                $("nav.pagination").show();
+                UI.view.nextPubButton();
+                UI.view.prevPubButton();
                 UI.view.mainInfo();
             } else {
                 UI.message("directionsService : " + status);
