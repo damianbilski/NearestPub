@@ -48,6 +48,7 @@ Map = {
             zoom: 15,
             disableDefaultUI: true
         };
+        $("nav.pagination, address.pub-info").hide();
         map = new google.maps.Map(document.getElementById("map"), options);
         // SET SERVICES
         services.search = new google.maps.places.PlacesService(map);
@@ -84,7 +85,7 @@ Map = {
             UI.view.geomarker();
         }
         google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
-            // $("body").removeClass("loading");
+            $("body").removeClass("loading");
         });
     },
     search: function () {
@@ -98,8 +99,6 @@ Map = {
     callback: function (results, status) {
         if (status == google.maps.places.PlacesServiceStatus.OK) {
             pubs = results;
-            console.log(pubs);
-            URL.set(); // initial URL set;
             var destinations = [];
             for (var i = 0; i < pubs.length; i++) {
                 destinations.push(pubs[i].geometry.location);
@@ -118,6 +117,7 @@ Map = {
                             pubs[j].duration = results[j].duration.text;
                         }
                     }
+                    UI.view.pagination.show();
                     Map.directions(myLocation, pubs[currentPub]);
                 } else {
                     UI.message(status);
@@ -128,8 +128,6 @@ Map = {
         }
     },
     directions: function (from, to) {
-        // $("#container address").addClass("loading");
-        $("body").addClass("loading");
         for (var i = 0; i < stepsArray.length; i++) {
             stepsArray[i].setMap(null);
         }
@@ -142,6 +140,7 @@ Map = {
         services.directions.set.route(request, function (response, status) {
             if (status == google.maps.DirectionsStatus.OK) {
                 services.directions.display.setDirections(response);
+                URL.set(); // initial URL set;
                 var myRoute = response.routes[0].legs[0];
                 for (var i = 0; i < myRoute.steps.length; i++) {
                     Map.marker(myRoute.steps[i].start_location, myRoute.steps[i].instructions);
@@ -164,11 +163,9 @@ Map = {
                     map: map
                 });
                 Map.marker(to.geometry.location, "<b>" + to.name + "</b>", true);
+                $("aside#preloader").removeClass("hide");
                 map.setCenter(myLocation);
                 // map.setCenterWithOffset(myLocation, 0, -50);
-                $("nav.pagination").show();
-                UI.view.nextPubButton();
-                UI.view.prevPubButton();
                 UI.view.mainInfo();
             } else {
                 UI.message("directionsService : " + status);
@@ -195,7 +192,6 @@ Map = {
 Pub = {
     getById: function (id) {
         console.log("Get by ID : " + id);
-        $("nav.pagination").hide();
         var request = {
             placeId: id
         }
@@ -238,6 +234,16 @@ Pub = {
 }
 UI = {
     view: {
+        pagination: {
+            show: function () {
+                $("nav.pagination").show();
+                UI.view.nextPubButton();
+                UI.view.prevPubButton();
+            },
+            hide: function () {
+                $("nav.pagination").show();
+            }
+        },
         nextPubButton: function () {
             $("nav.pagination .next .pag-pub-name").text(pubs[Pub.count.next()].name);
             $("nav.pagination .next .pag-pub-distance").text(pubs[Pub.count.next()].distance + " (" + pubs[Pub.count.next()].duration + " walking)");
@@ -249,6 +255,7 @@ UI = {
             $("nav.pagination .prev").attr("href", "@" + pubs[Pub.count.prev()].place_id);
         },
         mainInfo: function () {
+            $("address.pub-info").show();
             $("#container .pub-name").text(pubs[currentPub].name);
             $("#container .pub-matrix .pub-distance").text(pubs[currentPub].distance);
             $("#container .pub-matrix .pub-time").text(pubs[currentPub].duration);
@@ -275,9 +282,7 @@ UI = {
                     $("#container .pub-open").text(isOpen)
                     $("#container .pub-address").text(place.formatted_address);
                     $("#container .pub-phone a").attr("href", "tel:" + place.formatted_phone_number).text(place.international_phone_number);
-
-                    // $("#container address").removeClass("loading");
-                    $("body").removeClass("loading");
+                    $("aside#preloader").addClass("hide");
                 } else {
                     UI.message("UI.view.mainInfo()");
                 }
@@ -309,7 +314,8 @@ UI = {
             UI.buttons.common();
         },
         common: function () {
-            URL.set();
+            UI.view.nextPubButton();
+            UI.view.prevPubButton();
             Map.directions(myLocation, pubs[currentPub]);
         }
     },
